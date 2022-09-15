@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Link } from "gatsby";
 
-const IndexPage = () => {
+const PageTwo = () => {
   return (
     <main>
-      <Link to="/page-two">To page two</Link>
+      <Link to="/">To index</Link>
     </main>
   );
 };
 
-export default IndexPage;
+export default PageTwo;
