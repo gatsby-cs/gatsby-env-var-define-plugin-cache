@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: `g`,
+    title: `gatsby-env-var-define-plugin-cache`,
     siteUrl: `https://www.yourdomain.tld`,
   },
   plugins: [],

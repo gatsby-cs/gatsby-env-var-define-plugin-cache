@@ -1,8 +1,8 @@
 {
-  "name": "g",
+  "name": "gatsby-env-var-define-plugin-cache",
   "version": "1.0.0",
   "private": true,
-  "description": "g",
+  "description": "gatsby-env-var-define-plugin-cache",
   "author": "tyhopp",
   "keywords": [
     "gatsby"
