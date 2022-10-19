@@ -1,0 +1,52 @@
+diff --git a/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js b/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
+index 2839482..67cc244 100644
+--- a/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
++++ b/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
+@@ -16,6 +16,8 @@ var _glob = _interopRequireDefault(require("glob"));
+ 
+ var _path2 = _interopRequireDefault(require("path"));
+ 
++var _crypto = _interopRequireDefault(require("crypto"));
++
+ var _webpack = _interopRequireDefault(require("webpack"));
+ 
+ var _gatsbyCoreUtils = require("gatsby-core-utils");
+@@ -214,17 +216,32 @@ const createWebpackConfig = async ({
+   const varsFromProcessEnv = Object.keys(process.env).reduce((acc, key) => {
+     acc[key] = JSON.stringify(process.env[key]);
+     return acc;
+-  }, {}); // Don't allow overwriting of NODE_ENV, PUBLIC_DIR as to not break gatsby things
++  }, {});
++  const mergedEnvVars = Object.assign(envObject, varsFromProcessEnv); // Override these after processing to avoid conflicting values warning
++
++  delete mergedEnvVars.NODE_ENV;
++  delete mergedEnvVars.PUBLIC_DIR;
++
++  const envVarHash = _crypto.default.createHash(`md5`).update(JSON.stringify(mergedEnvVars)).digest(`hex`);
+ 
+-  envObject.NODE_ENV = JSON.stringify(nodeEnv);
+-  envObject.PUBLIC_DIR = JSON.stringify(`${siteDirectoryPath}/public`);
+-  const mergedEnvVars = Object.assign(envObject, varsFromProcessEnv);
+   const processEnvVars = Object.keys(mergedEnvVars).reduce((acc, key) => {
+-    acc[`process.env.${key}`] = mergedEnvVars[key];
++    acc[`process.env.${key}`] = _webpack.default.DefinePlugin.runtimeValue(() => mergedEnvVars[key], {
++      version: () => {
++        console.log({
++          key,
++          value: mergedEnvVars[key],
++          envVarHash
++        });
++        return envVarHash;
++      }
++    });
+     return acc;
+   }, {
+     "process.env": `({})`
+-  });
++  }); // Don't allow overwriting of NODE_ENV, PUBLIC_DIR as to not break gatsby things
++
++  processEnvVars[`process.env.${envObject.NODE_ENV}`] = JSON.stringify(nodeEnv);
++  processEnvVars[`process.env.${envObject.PUBLIC_DIR}`] = JSON.stringify(`${siteDirectoryPath}/public`);
+   const entries = {};
+   const precompileDevFunctions = isProductionEnv || process.env.GATSBY_PRECOMPILE_DEVELOP_FUNCTIONS === `true` || process.env.GATSBY_PRECOMPILE_DEVELOP_FUNCTIONS === `1`;
+   const functionsList = precompileDevFunctions ? knownFunctions : activeDevelopmentFunctions;
