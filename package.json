@@ -13,6 +13,7 @@
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
+    "postclean": "patch-package",
     "postinstall": "patch-package"
   },
   "dependencies": {
