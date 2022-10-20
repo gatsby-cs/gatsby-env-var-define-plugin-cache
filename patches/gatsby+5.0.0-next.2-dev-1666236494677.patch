@@ -1,0 +1,37 @@
+diff --git a/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js b/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
+index 2839482..4a6537e 100644
+--- a/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
++++ b/node_modules/gatsby/dist/internal-plugins/functions/gatsby-node.js
+@@ -214,17 +214,26 @@ const createWebpackConfig = async ({
+   const varsFromProcessEnv = Object.keys(process.env).reduce((acc, key) => {
+     acc[key] = JSON.stringify(process.env[key]);
+     return acc;
+-  }, {}); // Don't allow overwriting of NODE_ENV, PUBLIC_DIR as to not break gatsby things
++  }, {});
++  const mergedEnvVars = Object.assign(envObject, varsFromProcessEnv); // Override these after processing to avoid conflicting values warning
+ 
+-  envObject.NODE_ENV = JSON.stringify(nodeEnv);
+-  envObject.PUBLIC_DIR = JSON.stringify(`${siteDirectoryPath}/public`);
+-  const mergedEnvVars = Object.assign(envObject, varsFromProcessEnv);
++  delete mergedEnvVars.NODE_ENV;
++  delete mergedEnvVars.PUBLIC_DIR;
+   const processEnvVars = Object.keys(mergedEnvVars).reduce((acc, key) => {
+-    acc[`process.env.${key}`] = mergedEnvVars[key];
++    /**
++     * Invalidate webpack cache on env var value change.
++     * @see {@link https://webpack.js.org/plugins/define-plugin/#runtime-values-via-runtimevalue}
++     */
++    acc[`process.env.${key}`] = _webpack.default.DefinePlugin.runtimeValue(() => mergedEnvVars[key], {
++      version: mergedEnvVars[key]
++    });
+     return acc;
+   }, {
+     "process.env": `({})`
+-  });
++  }); // Don't allow overwriting of NODE_ENV, PUBLIC_DIR as to not break gatsby things
++
++  processEnvVars[`process.env.${envObject.NODE_ENV}`] = JSON.stringify(nodeEnv);
++  processEnvVars[`process.env.${envObject.PUBLIC_DIR}`] = JSON.stringify(`${siteDirectoryPath}/public`);
+   const entries = {};
+   const precompileDevFunctions = isProductionEnv || process.env.GATSBY_PRECOMPILE_DEVELOP_FUNCTIONS === `true` || process.env.GATSBY_PRECOMPILE_DEVELOP_FUNCTIONS === `1`;
+   const functionsList = precompileDevFunctions ? knownFunctions : activeDevelopmentFunctions;
