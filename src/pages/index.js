@@ -1,10 +1,9 @@
 import * as React from "react";
-import { Link } from "gatsby";
 
 const IndexPage = () => {
   return (
     <main>
-      <Link to="/page-two">To page two</Link>
+      <p>{process.env.GATSBY_ECHO_VALUE}</p>
     </main>
   );
 };

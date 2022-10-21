@@ -3,5 +3,5 @@ module.exports = {
     title: `gatsby-env-var-define-plugin-cache`,
     siteUrl: `https://www.yourdomain.tld`,
   },
-  plugins: [],
+  plugins: [`gatsby-plugin-gatsby-cloud`],
 };
